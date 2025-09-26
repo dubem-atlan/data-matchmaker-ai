@@ -5,9 +5,9 @@ export const Footer: React.FC = () => {
     <footer className="py-8 text-center">
       <p className="text-muted-foreground flex justify-center items-end">
         Made with ❤️ by {' '}
-        <a 
-          href="https://atlan.com/?ref=/regovern-quiz" 
-          target="_blank" 
+        <a
+          href="https://atlan.com/?ref=/regovern-datamatchmaking"
+          target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline font-medium"
         >

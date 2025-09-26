@@ -91,7 +91,7 @@ const results = [
     age: '5 years old, but feels like 50',
     description: 'Always late, never commits. Loves breaking right before exec reviews. Swipe right if you enjoy 3 a.m. alerts and trust issues.',
     ctaText: 'See how Atlan fixes this',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-datamatchmaking',
     isDesirable: false
   },
   {
@@ -101,7 +101,7 @@ const results = [
     age: 'Unknown',
     description: "I move fast and break compliance. Big fan of secrets, hate documentation.\nI'll ghost you during audits but look amazing in demos.",
     ctaText: 'See how Atlan brings models into the light',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-datamatchmaking',
     isDesirable: false
   },
   {
@@ -111,7 +111,7 @@ const results = [
     age: 'Mature, dependable',
     description: 'Low drama, high standards. Gets overlooked, but always there when you need me. Ready for a long-term relationship, if you\'ll just notice me.',
     ctaText: 'Tell me more',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-datamatchmaking',
     isDesirable: true
   },
   {
@@ -121,7 +121,7 @@ const results = [
     age: 'Timeless',
     description: 'Transparent, reliable, AI-ready. Context is my love language. I\'ll never ghost you, and your board will love me. Let\'s build something real.',
     ctaText: 'Find a healthier relationship at Re:Govern',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-datamatchmaking',
     isDesirable: true
   }
 ];
@@ -163,9 +163,9 @@ export const DataMatchQuiz: React.FC = () => {
 
     // Track quiz answer
     trackEvent('quiz_answer', {
-      question_number: quiz.currentQuestion + 1,
+      click_id: quiz.currentQuestion + 1,
       answer_index: answerIndex,
-      answer_text: questions[quiz.currentQuestion].options[answerIndex].text,
+      click_text: questions[quiz.currentQuestion].options[answerIndex].text,
       quiz_progress: `${quiz.currentQuestion + 1}/${questions.length}`
     });
 
@@ -213,8 +213,8 @@ export const DataMatchQuiz: React.FC = () => {
     // Track card swipe action
     trackEvent('card_swipe', {
       action: choice,
-      card_title: results[quiz.currentCard].title,
-      card_position: quiz.currentCard + 1,
+      click_text: results[quiz.currentCard].title,
+      click_id: quiz.currentCard + 1,
       total_cards: results.length
     });
 
@@ -240,9 +240,9 @@ export const DataMatchQuiz: React.FC = () => {
 
         // Track quiz completion
         trackEvent('quiz_complete', {
-          selected_match: results[quiz.currentCard].id,
-          match_title: results[quiz.currentCard].title,
-          completion_method: 'card_selection'
+          click_id: results[quiz.currentCard].id,
+          click_text: results[quiz.currentCard].title,
+          button_text: 'card_selection'
         });
 
         setQuiz({
@@ -271,9 +271,9 @@ export const DataMatchQuiz: React.FC = () => {
         } else {
           // If they've skipped all cards, show Atlan as default
           trackEvent('quiz_complete', {
-            selected_match: 'atlan',
-            match_title: 'Atlan',
-            completion_method: 'skipped_all_cards'
+            click_id: 'atlan',
+            click_text: 'Atlan',
+            button_text: 'skipped_all_cards'
           });
 
           setQuiz({
@@ -312,8 +312,8 @@ export const DataMatchQuiz: React.FC = () => {
   const resetQuiz = () => {
     // Track quiz reset
     trackEvent('quiz_reset', {
-      previous_result: quiz.selectedMatch || 'unknown',
-      source: 'results_page'
+      click_id: quiz.selectedMatch || 'unknown',
+      button_text: 'results_page'
     });
 
     setQuiz({
@@ -339,8 +339,8 @@ export const DataMatchQuiz: React.FC = () => {
   const shareOnLinkedIn = () => {
     // Track LinkedIn share click
     trackEvent('share_linkedin', {
-      quiz_result: getResult().id,
-      share_platform: 'linkedin'
+      click_id: getResult().id,
+      click_text: 'linkedin'
     });
 
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -350,8 +350,8 @@ export const DataMatchQuiz: React.FC = () => {
   const shareOnTwitter = () => {
     // Track Twitter share click
     trackEvent('share_twitter', {
-      quiz_result: getResult().id,
-      share_platform: 'twitter'
+      click_id: getResult().id,
+      click_text: 'twitter'
     });
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
@@ -397,7 +397,7 @@ export const DataMatchQuiz: React.FC = () => {
         portalId: '6880682', // Replace with your HubSpot Portal ID
         formId: "d8916772-d73e-4ca2-84f9-3abd8082be1d", // Replace with your HubSpot Form ID
         target: '#hubspot-form-container',
-        
+
         onFormReady: () => {
           // console.log('HubSpot form ready');
           // Apply styling multiple times to ensure it sticks
@@ -414,8 +414,8 @@ export const DataMatchQuiz: React.FC = () => {
 
           // Track successful form submission
           trackEvent('regovern_signup_complete', {
-            quiz_result: quiz.selectedMatch || 'unknown',
-            form_source: 'hubspot_modal'
+            click_id: quiz.selectedMatch || 'unknown',
+            button_text: 'hubspot_modal'
           });
 
           // Close modal after successful submission
@@ -571,8 +571,9 @@ export const DataMatchQuiz: React.FC = () => {
   const openHubSpotModal = () => {
     // Track Re:Govern signup click
     trackEvent('regovern_signup_click', {
-      quiz_result: quiz.selectedMatch || 'unknown',
-      source: 'quiz_results'
+      click_id: "regovern-signup-button",
+      click_text: quiz.selectedMatch || 'unknown',
+      button_text: 'quiz_results'
     });
 
     setQuiz(prev => ({ ...prev, showHubSpotModal: true }));
@@ -666,6 +667,7 @@ export const DataMatchQuiz: React.FC = () => {
             {/* Only show primary CTA for desirable results */}
             {result.isDesirable && (
               <Button
+                id="regovern-signup-button"
                 size="lg"
                 onClick={openHubSpotModal}
                 className="bg-[#2026d2] hover:bg-[#1a1fb8] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
@@ -674,15 +676,16 @@ export const DataMatchQuiz: React.FC = () => {
               </Button>
             )}
             <a
+              id="regovern-cta-button"
               href={result.ctaUrl}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => {
                 trackEvent('result_cta_click', {
-                  result_id: result.id,
-                  result_title: result.title,
-                  cta_text: result.ctaText,
-                  destination_url: result.ctaUrl
+                  click_id: result.id,
+                  click_text: result.title,
+                  button_text: result.ctaText,
+                  click_url: result.ctaUrl
                 });
               }}
               className="inline-flex items-center text-[#2026d2] hover:underline hover:text-[#1a1fb8] transition-colors duration-200 text-md font-medium"
@@ -702,7 +705,7 @@ export const DataMatchQuiz: React.FC = () => {
             }}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:underline transition-colors duration-200"
           >
-             <img src={'https://website-assets.atlan.com/img/home/linkedin-blue.svg'} alt="X icon" className="w-4 h-4 mr-1" />
+            <img src={'https://website-assets.atlan.com/img/home/linkedin-blue.svg'} alt="X icon" className="w-4 h-4 mr-1" />
             Share on LinkedIn
           </a>
           <a
@@ -812,7 +815,7 @@ export const DataMatchQuiz: React.FC = () => {
 
   const currentQ = questions[quiz.currentQuestion];
 
-  
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Progress indicator */}
