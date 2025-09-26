@@ -90,7 +90,7 @@ const results = [
     title: 'Unreliable Pipeline',
     age: '5 years old, but feels like 50',
     description: 'Always late, never commits. Loves breaking right before exec reviews. Swipe right if you enjoy 3 a.m. alerts and trust issues.',
-    ctaText: 'See how Atlan fixes this',
+    ctaText: 'See how peers fix this - and get certified at Re:Govern',
     ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-datamatchmaking',
     isDesirable: false
   },
@@ -847,7 +847,7 @@ export const DataMatchQuiz: React.FC = () => {
               onClick={() => handleAnswer(index)}
               disabled={quiz.isTransitioning}
             >
-              <div>
+              <div className='text-wrap'>
                 <div className="font-medium">{option.text}</div>
                 {option.subtitle && (
                   <div className="text-sm text-muted-foreground mt-1">{option.subtitle}</div>
