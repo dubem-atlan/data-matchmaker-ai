@@ -812,6 +812,7 @@ export const DataMatchQuiz: React.FC = () => {
 
   const currentQ = questions[quiz.currentQuestion];
 
+  
   return (
     <div className="max-w-2xl mx-auto">
       {/* Progress indicator */}
