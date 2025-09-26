@@ -397,7 +397,7 @@ export const DataMatchQuiz: React.FC = () => {
         portalId: '6880682', // Replace with your HubSpot Portal ID
         formId: "d8916772-d73e-4ca2-84f9-3abd8082be1d", // Replace with your HubSpot Form ID
         target: '#hubspot-form-container',
-        css: '', // Disable HubSpot's default CSS
+        
         onFormReady: () => {
           // console.log('HubSpot form ready');
           // Apply styling multiple times to ensure it sticks
