@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Share2, Linkedin, Twitter, RotateCcw, X } from 'lucide-react';
 import XIcon from '../assets/x-icon.png';
+import JSConfetti from 'js-confetti';
 
 // TypeScript declarations for HubSpot and Google Analytics
 declare global {
@@ -90,7 +91,8 @@ const results = [
     age: '5 years old, but feels like 50',
     description: 'Always late, never commits. Loves breaking right before exec reviews. Swipe right if you enjoy 3 a.m. alerts and trust issues.',
     ctaText: 'See how Atlan fixes this',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz'
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    isDesirable: false
   },
   {
     id: 'shadow-ai',
@@ -99,7 +101,8 @@ const results = [
     age: 'Unknown',
     description: "I move fast and break compliance. Big fan of secrets, hate documentation.\nI'll ghost you during audits but look amazing in demos.",
     ctaText: 'See how Atlan brings models into the light',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz'
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    isDesirable: false
   },
   {
     id: 'data-quality',
@@ -107,8 +110,9 @@ const results = [
     title: 'Data Quality',
     age: 'Mature, dependable',
     description: 'Low drama, high standards. Gets overlooked, but always there when you need me. Ready for a long-term relationship, if you\'ll just notice me.',
-    ctaText: 'See how Atlan makes quality everyone\'s job',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz'
+    ctaText: 'Tell me more',
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    isDesirable: true
   },
   {
     id: 'atlan',
@@ -117,7 +121,8 @@ const results = [
     age: 'Timeless',
     description: 'Transparent, reliable, AI-ready. Context is my love language. I\'ll never ghost you, and your board will love me. Let\'s build something real.',
     ctaText: 'Find a healthier relationship at Re:Govern',
-    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz'
+    ctaUrl: 'https://atlan.com/regovern/?ref=/regovern-quiz',
+    isDesirable: true
   }
 ];
 
@@ -145,10 +150,17 @@ export const DataMatchQuiz: React.FC = () => {
     role: ''
   });
 
+  // Initialize confetti
+  const [jsConfetti, setJsConfetti] = useState<JSConfetti | null>(null);
+
+  useEffect(() => {
+    setJsConfetti(new JSConfetti());
+  }, []);
+
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...quiz.answers];
     newAnswers[quiz.currentQuestion] = answerIndex;
-    
+
     // Track quiz answer
     trackEvent('quiz_answer', {
       question_number: quiz.currentQuestion + 1,
@@ -156,7 +168,7 @@ export const DataMatchQuiz: React.FC = () => {
       answer_text: questions[quiz.currentQuestion].options[answerIndex].text,
       quiz_progress: `${quiz.currentQuestion + 1}/${questions.length}`
     });
-    
+
     // Start slide-out transition
     setQuiz({
       ...quiz,
@@ -164,7 +176,7 @@ export const DataMatchQuiz: React.FC = () => {
       isTransitioning: true,
       slideDirection: 'out'
     });
-    
+
     // After slide-out animation, update question and slide-in
     setTimeout(() => {
       if (quiz.currentQuestion < questions.length - 1) {
@@ -175,7 +187,7 @@ export const DataMatchQuiz: React.FC = () => {
           currentQuestion: quiz.currentQuestion + 1,
           slideDirection: 'in'
         });
-        
+
         // Complete slide-in animation
         setTimeout(() => {
           setQuiz(prev => ({
@@ -184,7 +196,7 @@ export const DataMatchQuiz: React.FC = () => {
             slideDirection: 'none'
           }));
         }, 50); // Small delay to ensure slide-in starts from right
-        
+
       } else {
         setQuiz({
           ...quiz,
@@ -205,7 +217,7 @@ export const DataMatchQuiz: React.FC = () => {
       card_position: quiz.currentCard + 1,
       total_cards: results.length
     });
-    
+
     // Start swipe animation
     setQuiz({
       ...quiz,
@@ -216,13 +228,23 @@ export const DataMatchQuiz: React.FC = () => {
     // After swipe animation, handle the logic
     setTimeout(() => {
       if (choice === 'choose') {
+        // Trigger confetti effect only for desirable results
+        const currentResult = results[quiz.currentCard];
+        if (jsConfetti && currentResult.isDesirable) {
+          jsConfetti.addConfetti({
+            emojis: ['🎉', '✨', '❤️', '🎈', '🥳'],
+            emojiSize: 50,
+            confettiNumber: 100,
+          });
+        }
+
         // Track quiz completion
         trackEvent('quiz_complete', {
           selected_match: results[quiz.currentCard].id,
           match_title: results[quiz.currentCard].title,
           completion_method: 'card_selection'
         });
-        
+
         setQuiz({
           ...quiz,
           selectedMatch: results[quiz.currentCard].id,
@@ -247,27 +269,27 @@ export const DataMatchQuiz: React.FC = () => {
             isCardAnimating: false
           });
         } else {
-        // If they've skipped all cards, show Atlan as default
-        trackEvent('quiz_complete', {
-          selected_match: 'atlan',
-          match_title: 'Atlan',
-          completion_method: 'skipped_all_cards'
-        });
-        
-        setQuiz({
-          ...quiz,
-          selectedMatch: 'atlan',
-          showResult: true,
-          cardSwipeDirection: 'none',
-          isCardAnimating: false
-        });
-        // Trigger fade-in animation after a small delay
-        setTimeout(() => {
-          setQuiz(prev => ({
-            ...prev,
-            resultVisible: true
-          }));
-        }, 100);
+          // If they've skipped all cards, show Atlan as default
+          trackEvent('quiz_complete', {
+            selected_match: 'atlan',
+            match_title: 'Atlan',
+            completion_method: 'skipped_all_cards'
+          });
+
+          setQuiz({
+            ...quiz,
+            selectedMatch: 'atlan',
+            showResult: true,
+            cardSwipeDirection: 'none',
+            isCardAnimating: false
+          });
+          // Trigger fade-in animation after a small delay
+          setTimeout(() => {
+            setQuiz(prev => ({
+              ...prev,
+              resultVisible: true
+            }));
+          }, 100);
         }
       }
     }, 700); // 700ms for swipe animation
@@ -277,9 +299,9 @@ export const DataMatchQuiz: React.FC = () => {
     if (quiz.selectedMatch) {
       return results.find(r => r.id === quiz.selectedMatch) || results[3];
     }
-    
+
     const answers = quiz.answers;
-    
+
     // Simple logic to determine result based on answers
     if (answers[0] === 2) return results[0]; // Pipeline issues
     if (answers[0] === 3 || answers[2] === 3) return results[1]; // Shadow AI
@@ -293,7 +315,7 @@ export const DataMatchQuiz: React.FC = () => {
       previous_result: quiz.selectedMatch || 'unknown',
       source: 'results_page'
     });
-    
+
     setQuiz({
       currentQuestion: 0,
       answers: [null, null, null],
@@ -320,7 +342,7 @@ export const DataMatchQuiz: React.FC = () => {
       quiz_result: getResult().id,
       share_platform: 'linkedin'
     });
-    
+
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
   };
@@ -331,7 +353,7 @@ export const DataMatchQuiz: React.FC = () => {
       quiz_result: getResult().id,
       share_platform: 'twitter'
     });
-    
+
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
   };
@@ -389,13 +411,13 @@ export const DataMatchQuiz: React.FC = () => {
         },
         onFormSubmitted: () => {
           // console.log('HubSpot form submission completed');
-          
+
           // Track successful form submission
           trackEvent('regovern_signup_complete', {
             quiz_result: quiz.selectedMatch || 'unknown',
             form_source: 'hubspot_modal'
           });
-          
+
           // Close modal after successful submission
           setTimeout(() => {
             setQuiz(prev => ({ ...prev, showHubSpotModal: false }));
@@ -529,7 +551,7 @@ export const DataMatchQuiz: React.FC = () => {
           margin-right: 0.5rem !important;
         }
       `;
-      
+
       container.appendChild(styleTag);
 
       // Force submit button text update
@@ -552,7 +574,7 @@ export const DataMatchQuiz: React.FC = () => {
       quiz_result: quiz.selectedMatch || 'unknown',
       source: 'quiz_results'
     });
-    
+
     setQuiz(prev => ({ ...prev, showHubSpotModal: true }));
     // Create form after modal opens
     setTimeout(() => {
@@ -573,7 +595,7 @@ export const DataMatchQuiz: React.FC = () => {
   useEffect(() => {
     if (quiz.showHubSpotModal) {
       let observer: MutationObserver | null = null;
-      
+
       const setupObserver = () => {
         const container = document.getElementById('hubspot-form-container');
         if (!container) return;
@@ -584,7 +606,7 @@ export const DataMatchQuiz: React.FC = () => {
         // Set up observer to watch for DOM changes
         observer = new MutationObserver((mutations) => {
           let shouldRestyle = false;
-          
+
           mutations.forEach((mutation) => {
             if (mutation.type === 'childList' || mutation.type === 'attributes') {
               shouldRestyle = true;
@@ -626,11 +648,10 @@ export const DataMatchQuiz: React.FC = () => {
 
   if (quiz.showResult) {
     const result = getResult();
-    
+
     return (
-      <div className={`max-w-2xl mx-auto space-y-8 transition-all duration-700 ease-out ${
-        quiz.resultVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-      }`}>
+      <div className={`max-w-2xl mx-auto space-y-8 transition-all duration-700 ease-out ${quiz.resultVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+        }`}>
         <Card className="p-8 text-center shadow-card-hover border-2">
           <div className="text-6xl mb-4">{result.emoji}</div>
           <h2 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent font-heading">
@@ -640,10 +661,22 @@ export const DataMatchQuiz: React.FC = () => {
             <p className="text-lg text-muted-foreground mb-4">Age: {result.age}</p>
           )}
           <p className="text-lg text-muted-foreground mb-6 whitespace-pre-line">{result.description}</p>
-          
-          <div className="space-y-4">
-            <Button 
-              size="lg" 
+
+          <div className=" flex flex-col items-center justify-center gap-3">
+            {/* Only show primary CTA for desirable results */}
+            {result.isDesirable && (
+              <Button
+                size="lg"
+                onClick={openHubSpotModal}
+                className="bg-[#2026d2] hover:bg-[#1a1fb8] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                Let's make it a Date
+              </Button>
+            )}
+            <a
+              href={result.ctaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => {
                 trackEvent('result_cta_click', {
                   result_id: result.id,
@@ -651,34 +684,38 @@ export const DataMatchQuiz: React.FC = () => {
                   cta_text: result.ctaText,
                   destination_url: result.ctaUrl
                 });
-                window.open(result.ctaUrl, '_blank');
               }}
+              className="inline-flex items-center text-[#2026d2] hover:underline hover:text-[#1a1fb8] transition-colors duration-200 text-md font-medium"
             >
               {result.ctaText}
-            </Button>
+            </a>
+
           </div>
         </Card>
 
         <div className="flex justify-center space-x-4">
-          <Button variant="linkedin" onClick={shareOnLinkedIn}>
-            <Linkedin className="w-4 h-4 mr-2" />
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              shareOnLinkedIn();
+            }}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:underline transition-colors duration-200"
+          >
+             <img src={'https://website-assets.atlan.com/img/home/linkedin-blue.svg'} alt="X icon" className="w-4 h-4 mr-1" />
             Share on LinkedIn
-          </Button>
-          <Button variant="twitter" onClick={shareOnTwitter}>
-            <img src={XIcon} alt="X icon" className="w-6 h-6 mr-1" />
+          </a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              shareOnTwitter();
+            }}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:underline transition-colors duration-200"
+          >
+            <img src={'https://website-assets.atlan.com/img/x-logo-blue.svg'} alt="X icon" className="w-4 h-4 mr-1" />
             Share on X
-          </Button>
-        </div>
-
-        <div className="text-center">
-          <Button 
-              variant="linkedin" 
-              size="lg" 
-              onClick={openHubSpotModal}
-              className="bg-primary"
-            >
-              Sign up for Re:Govern
-          </Button>
+          </a>
         </div>
 
         <div className="text-center">
@@ -689,8 +726,8 @@ export const DataMatchQuiz: React.FC = () => {
         </div>
 
         {/* HubSpot Form Modal */}
-        <Dialog 
-          open={quiz.showHubSpotModal} 
+        <Dialog
+          open={quiz.showHubSpotModal}
           onOpenChange={(open) => {
             if (!open) {
               closeHubSpotModal();
@@ -705,7 +742,7 @@ export const DataMatchQuiz: React.FC = () => {
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Join us at Re:Govern, the premier data governance conference. Register below 
+                Join us at Re:Govern, the premier data governance conference. Register below
                 to secure your spot and connect with data leaders from around the world.
               </p>
               <div id="hubspot-form-container" className="min-h-[200px]">
@@ -724,7 +761,7 @@ export const DataMatchQuiz: React.FC = () => {
   // Swipe Cards Section
   if (quiz.showSwipeCards) {
     const currentCard = results[quiz.currentCard];
-    
+
     return (
       <div className="max-w-2xl mx-auto">
         <div className="mb-8 text-center">
@@ -736,11 +773,10 @@ export const DataMatchQuiz: React.FC = () => {
           </p>
         </div>
 
-        <Card className={`p-8 text-center shadow-card-hover border-2 bg-gradient-to-br from-background to-muted/20 transition-all duration-700 ease-in-out ${
-          quiz.cardSwipeDirection === 'left' ? 'transform -translate-x-full -rotate-12 opacity-0' :
+        <Card className={`p-8 text-center shadow-card-hover border-2 bg-gradient-to-br from-background to-muted/20 transition-all duration-700 ease-in-out ${quiz.cardSwipeDirection === 'left' ? 'transform -translate-x-full -rotate-12 opacity-0' :
           quiz.cardSwipeDirection === 'right' ? 'transform translate-x-full rotate-12 opacity-0' :
-          'transform translate-x-0 rotate-0 opacity-100'
-        }`}>
+            'transform translate-x-0 rotate-0 opacity-100'
+          }`}>
           <div className="text-6xl mb-4">{currentCard.emoji}</div>
           <h3 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent font-heading">
             {currentCard.title}
@@ -749,10 +785,10 @@ export const DataMatchQuiz: React.FC = () => {
           <p className="text-lg text-muted-foreground mb-8 whitespace-pre-line leading-relaxed">
             {currentCard.description}
           </p>
-          
+
           <div className="flex justify-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
               onClick={() => handleCardChoice('skip')}
               className="px-8"
@@ -760,7 +796,7 @@ export const DataMatchQuiz: React.FC = () => {
             >
               ❌ Skip
             </Button>
-            <Button 
+            <Button
               size="lg"
               onClick={() => handleCardChoice('choose')}
               className="px-8 bg-gradient-primary"
@@ -785,20 +821,19 @@ export const DataMatchQuiz: React.FC = () => {
           <span>{Math.round(((quiz.currentQuestion + 1) / questions.length) * 100)}%</span>
         </div>
         <div className="w-full bg-muted rounded-full h-2">
-          <div 
+          <div
             className="bg-gradient-primary h-2 rounded-full transition-all duration-500"
             style={{ width: `${((quiz.currentQuestion + 1) / questions.length) * 100}%` }}
           />
         </div>
       </div>
 
-      <Card className={`p-8 shadow-card-hover transition-all duration-300 ease-in-out ${
-        quiz.slideDirection === 'out' ? 'transform translate-x-full opacity-0' :
+      <Card className={`p-8 shadow-card-hover transition-all duration-300 ease-in-out ${quiz.slideDirection === 'out' ? 'transform translate-x-full opacity-0' :
         quiz.slideDirection === 'in' ? 'transform -translate-x-full opacity-0' :
-        'transform translate-x-0 opacity-100'
-      }`}>
+          'transform translate-x-0 opacity-100'
+        }`}>
         <h2 className="text-2xl font-bold mb-8 text-center font-heading">{currentQ.text}</h2>
-        
+
         <div className="space-y-4">
           {currentQ.options.map((option, index) => (
             <Button
